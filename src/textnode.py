@@ -39,3 +39,24 @@ def text_node_to_html_node(text_node: TextNode):
         case _:
             raise Exception
     return node
+
+def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: str):
+    
+    new_nodes = list()
+
+    for old_node in old_nodes:
+        if old_node.text_type != TextType.text:
+            new_nodes.append(old_node)
+        else:
+            split_text = old_node.text.split(delimiter)
+            if len(split_text) < 3:
+                raise ValueError(f"Invalid markdown syntax: {delimiter} missing closing character")
+            for i,text in enumerate(split_text):
+                if text == '':
+                    continue
+                elif i%2 == 0:
+                    new_nodes.append(TextNode(text, TextType.text))
+                else:
+                    new_nodes.append(TextNode(text, text_type))
+    
+    return new_nodes

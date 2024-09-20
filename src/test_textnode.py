@@ -2,6 +2,7 @@ import unittest
 
 from textnode import (TextNode,
                       text_node_to_html_node,
+                      split_nodes_delimiter,
                       TextType,
                       )
 
@@ -29,7 +30,7 @@ class TestTextNode(unittest.TestCase):
         self.assertNotEqual(node.text_type, node2.text_type)
 
 
-class TestTextNodToHtml(unittest.TestCase):
+class TestTextNodeToHtml(unittest.TestCase):
     def test_text(self):
 
         text_node = TextNode("This is a text node", "text")
@@ -91,6 +92,28 @@ class TestTextNodToHtml(unittest.TestCase):
     
         with self.assertRaises(Exception):
             leaf_node = text_node_to_html_node(text_node)
+
+
+class TestSplitNodesDelimiter(unittest.TestCase):
+
+    def test_not_text_type(self):
+
+        tnode = [TextNode("this is a *text*", TextType.bold),
+                 TextNode("this is a _text_", TextType.italic)]
+        new_nodes = split_nodes_delimiter(tnode, '', TextType.text)
+        # No delimiter and TextType.text shouldn't fail since tnode is not TextType.text
+        # It only tries to split TextType.text, other tyoes are not transformed.
+
+        self.assertEqual(new_nodes[0].text_type, TextType.bold)
+        self.assertEqual(new_nodes[1].text_type, TextType.italic)
+
+
+    def test_no_matching_delimiter(self):
+        tnode = [TextNode("this is a *text", TextType.text)]
+
+        with self.assertRaises(ValueError) as cm:
+            new_nodes = split_nodes_delimiter(tnode, '*', TextType.bold)
+        self.assertEqual(cm.exception.args[0], f"Invalid markdown syntax: * missing closing character")
 
 if __name__ == "__main__":
     unittest.main()
