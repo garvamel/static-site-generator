@@ -49,7 +49,10 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
             new_nodes.append(old_node)
         else:
             split_text = old_node.text.split(delimiter)
-            if len(split_text) < 3:
+            if len(split_text) == 1:
+                new_nodes.append(old_node)
+                continue
+            if len(split_text) == 2:
                 raise ValueError(f"Invalid markdown syntax: {delimiter} missing closing character")
             for i,text in enumerate(split_text):
                 if text == '':
