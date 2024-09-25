@@ -1,12 +1,15 @@
 import unittest
 
 from textnode import (TextNode,
-                      split_nodes_delimiter,
                       TextType,
                       )
 
-from inline_markdown import extract_markdown_links, extract_markdown_images
-
+from inline_markdown import (extract_markdown_links, 
+                             extract_markdown_images, 
+                             split_nodes_delimiter,
+                             split_nodes_images,
+                             split_nodes_links,
+                             )
 
 class TestSplitNodesDelimiter(unittest.TestCase):
 
@@ -133,20 +136,27 @@ class TestSplitNodesDelimiter(unittest.TestCase):
                                          TextNode("text", TextType.bold)
                                          ])
 
-class TestExtract(unittest.TestCase):
+class TestExtractFuncs(unittest.TestCase):
     
     def test_images_multiple(self):
 
         text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg). This is text with a link (treated as an image) ![to boot dev](https://www.boot.dev) and ![to youtube](https://www.youtube.com/@bootdotdev)."
         
-        self.assertEqual(extract_markdown_images(text),[("rick roll", "https://i.imgur.com/aKaOqIh.gif"), ("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg"),("to boot dev", "https://www.boot.dev"), ("to youtube", "https://www.youtube.com/@bootdotdev")])
+        matches = extract_markdown_images(text)
+        matches = [match.groups() for match in matches]
+
+
+        self.assertEqual(matches,[("rick roll", "https://i.imgur.com/aKaOqIh.gif"), ("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg"),("to boot dev", "https://www.boot.dev"), ("to youtube", "https://www.youtube.com/@bootdotdev")])
 
 
     def test_link_multiple(self):
 
         text = "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev). This is text with an image (treated as a link) [rick roll](https://i.imgur.com/aKaOqIh.gif) and [obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
 
-        self.assertEqual(extract_markdown_links(text),[("to boot dev", "https://www.boot.dev"), ("to youtube", "https://www.youtube.com/@bootdotdev"),("rick roll", "https://i.imgur.com/aKaOqIh.gif"), ("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg")])
+        matches = extract_markdown_links(text)
+        matches = [match.groups() for match in matches]
+
+        self.assertEqual(matches,[("to boot dev", "https://www.boot.dev"), ("to youtube", "https://www.youtube.com/@bootdotdev"),("rick roll", "https://i.imgur.com/aKaOqIh.gif"), ("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg")])
 
 
     def test_link_error(self):
@@ -155,8 +165,82 @@ class TestExtract(unittest.TestCase):
 
         text = "This is text with a link [to boot dev] (https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)."
 
-        self.assertEqual(extract_markdown_links(text),[("to youtube","https://www.youtube.com/@bootdotdev")])
+        matches = extract_markdown_links(text)
+        matches = [match.groups() for match in matches]
 
+        self.assertEqual(matches,[("to youtube","https://www.youtube.com/@bootdotdev")])
+
+class TestSplitNodeFuncs(unittest.TestCase):
+
+    def test_no_matches_links_and_images(self):
+        
+        old_nodes = [TextNode("aa", TextType.text)]
+
+        with self.assertRaises(ValueError) as cm:
+            new_nodes = split_nodes_links(old_nodes)
+        self.assertEqual(cm.exception.args[0], "No markdown links found")
+
+        with self.assertRaises(ValueError) as cm:
+            new_nodes = split_nodes_links(old_nodes)
+        self.assertEqual(cm.exception.args[0], "No markdown links found")
+
+    def test_split_node_link(self):
+        old_nodes = [TextNode("This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev) and lalala",TextType.text)]
+        
+        new_nodes = split_nodes_links(old_nodes)
+        self.assertListEqual(new_nodes,[
+                                        TextNode("This is text with a link ", TextType.text),
+                                        TextNode("to boot dev", TextType.link, "https://www.boot.dev"),
+                                        TextNode(" and ", TextType.text),
+                                        TextNode(
+                                            "to youtube", TextType.link, "https://www.youtube.com/@bootdotdev"
+                                        ),
+                                        TextNode(" and lalala", TextType.text)
+                                        ])
+
+    def test_split_node_image(self):
+        old_nodes = [TextNode("This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg) and lalala",TextType.text)]
+        
+        new_nodes = split_nodes_images(old_nodes)
+        self.assertListEqual(new_nodes,[
+                                        TextNode("This is text with a ", TextType.text),
+                                        TextNode("rick roll", TextType.image, "https://i.imgur.com/aKaOqIh.gif"),
+                                        TextNode(" and ", TextType.text),
+                                        TextNode(
+                                            "obi wan", TextType.image, "https://i.imgur.com/fJRm4Vk.jpeg"
+                                        ),
+                                        TextNode(" and lalala", TextType.text)
+                                        ])
+
+    def test_split_node_link_single_match(self):
+        old_nodes = [TextNode("[to boot dev](https://www.boot.dev)",TextType.text)]
+        
+        new_nodes = split_nodes_links(old_nodes)
+        self.assertListEqual(new_nodes,[                                     TextNode("to boot dev", TextType.link, "https://www.boot.dev"),
+                                        ])
+        
+    def test_split_node_image_single_match(self):
+        old_nodes = [TextNode("![rick roll](https://i.imgur.com/aKaOqIh.gif)",TextType.text)]
+        
+        new_nodes = split_nodes_images(old_nodes)
+        self.assertListEqual(new_nodes,[                                      TextNode("rick roll", TextType.image, "https://i.imgur.com/aKaOqIh.gif")])
+
+    def test_split_node_link_multi_match_no_text(self):
+        old_nodes = [TextNode("[to boot dev](https://www.boot.dev)[to youtube](https://www.youtube.com/@bootdotdev)",TextType.text)]
+        
+        new_nodes = split_nodes_links(old_nodes)
+        self.assertListEqual(new_nodes,[
+            TextNode("to boot dev", TextType.link,"https://www.boot.dev"), TextNode("to youtube", TextType.link, "https://www.youtube.com/@bootdotdev")
+                                        ])
+        
+    def test_split_node_image_multi_match_not_text(self):
+        old_nodes = [TextNode("![rick roll](https://i.imgur.com/aKaOqIh.gif)![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)",TextType.text)]
+        
+        new_nodes = split_nodes_images(old_nodes)
+        self.assertListEqual(new_nodes,[
+            TextNode("rick roll", TextType.image, "https://i.imgur.com/aKaOqIh.gif"),
+            TextNode("obi wan", TextType.image, "https://i.imgur.com/fJRm4Vk.jpeg")
+            ])
 
 if __name__ == "__main__":
     unittest.main()
