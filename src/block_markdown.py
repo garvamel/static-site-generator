@@ -26,6 +26,9 @@ def block_to_blocktype(block):
         -unordered_list: * or - at the start of every line, followed by a space
         -ordered_list: incremental number followed by a dot and space every line
     '''
+    if type(block) != str:
+        raise TypeError
+
     if len(block) == 0:
         raise ValueError("Empty block")
     
@@ -54,21 +57,28 @@ def match_code(block):
 def match_quote(block):
 
     for line in block.splitlines():
-        if line[0] =='>':
+        if len(line) > 0 and line[0] =='>':
             continue
         else:
-            return False
-        
+            return False    
     return "quote"
 
 def match_unordered_list(block):
 
-    for line in block.splitlines():
-        if re.findall(r"^[*-] ", line):
-            continue
-        else:
-            return False
-    return "unordered_list"
+    lines = block.splitlines()
+    ul_char = ''
+
+    if m := re.findall(r"^([*-]) ", lines[0]):
+        ul_char = m[0]
+        for line in lines[1:]:
+            m = re.findall(r"^([*-]) ", line)
+            if m and m[0] == ul_char:
+                continue
+            else:
+                return False
+        return "unordered_list"
+    else:
+        return False
 
 def match_ordered_list(block):
     index = 0

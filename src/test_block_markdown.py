@@ -54,6 +54,34 @@ This is a paragraph of text. It has some **bold** and *italic* words inside of i
         
 class TestBlockToBlockType(unittest.TestCase):
 
+    def test_type_error(self):
+
+        block = 5
+        block1 = 1.1
+        block2 = None
+        block3 = list()
+        block4 = tuple()
+        block5 = dict()
+        
+        with self.assertRaises(TypeError):
+            block_to_blocktype(block)
+            block_to_blocktype(block1)
+            block_to_blocktype(block2)
+            block_to_blocktype(block3)
+            block_to_blocktype(block4)
+            block_to_blocktype(block5)
+
+
+
+    def test_empty_block(self):
+
+        block = ""
+
+        with self.assertRaises(ValueError) as cm:
+            block_to_blocktype(block)
+        
+        self.assertEqual(cm.exception.args[0],"Empty block")
+
     def test_heading_case(self):
 
         heading1 = "# This is a heading"
@@ -86,3 +114,79 @@ class TestBlockToBlockType(unittest.TestCase):
         self.assertEqual(block_to_blocktype(code3), "paragraph")
         self.assertEqual(block_to_blocktype(code4), "paragraph")
         self.assertEqual(block_to_blocktype(code5), "paragraph")
+
+    def test_quote_case(self):
+
+        quote1 = """>Quote title
+>newline
+>quote content
+>endline"""
+
+        quote2 = """>Quote title
+newline
+>quote content
+>endline"""
+
+        quote3 = """>>Quote title
+
+>>quote content
+>>endline
+"""
+
+        self.assertEqual(block_to_blocktype(quote1), "quote")
+        self.assertEqual(block_to_blocktype(quote2), "paragraph")
+        self.assertEqual(block_to_blocktype(quote3), "paragraph")
+
+    def test_ul_case(self):
+
+        ul1 = """* Hola
+* como
+* te
+* va"""
+
+        ul2 = """- Hola
+- como
+- te
+- va"""
+
+        ul3 = """- Hola
+- como
+* te
+* va"""
+
+        ul4 = """- Hola
+- como
+- te
+va"""
+
+        self.assertEqual(block_to_blocktype(ul1), "unordered_list")
+        self.assertEqual(block_to_blocktype(ul2), "unordered_list")
+        self.assertEqual(block_to_blocktype(ul3), "paragraph")
+        self.assertEqual(block_to_blocktype(ul4), "paragraph")
+
+    def test_ul_case(self):
+
+        ol1 = """1. Hola
+2. como
+3. te
+4. va"""
+
+        ol2 = """2. Hola
+-3. como
+-4. te
+-5. va"""
+
+        ol3 = """1. Hola
+3. como
+4. te
+5. va"""
+
+        ol4 = """ Hola
+2. como
+3. te
+4. va"""
+
+        self.assertEqual(block_to_blocktype(ol1), "ordered_list")
+        self.assertEqual(block_to_blocktype(ol2), "paragraph")
+        self.assertEqual(block_to_blocktype(ol3), "paragraph")
+        self.assertEqual(block_to_blocktype(ol4), "paragraph")
