@@ -1,11 +1,6 @@
-from textnode import TextNode
-
+from copy_static import copy_static_to_public
 def main():
 
-    text = "This is a text node"
-    text_type = "bold"
-    url = "https://www.boot.dev"
-    tn = TextNode(text, text_type, url)
-    print(tn)
+    copy_static_to_public('static', 'public')
 
 main()

@@ -1,6 +1,6 @@
 __pycache__/
-.vscode
+.vscode/
 .DS_Store
 md_file.md
 LGV.jpg
-static
+public/

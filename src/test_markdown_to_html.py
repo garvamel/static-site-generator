@@ -1,5 +1,4 @@
 import unittest
-import sys
 
 from markdown_to_html import markdown_to_html_node
 from htmlnode import ParentNode, LeafNode
