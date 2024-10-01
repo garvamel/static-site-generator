@@ -1,6 +1,13 @@
 from functools import reduce
 import re
 
+class BlockType():
+    paragraph = "paragraph"
+    heading = "heading"
+    code = "code"
+    quote = "quote"
+    unordered_list = "unordered_list"
+    ordered_list = "ordered_list"
 
 def markdown_to_blocks(markdown: str) -> list[str]:
     
@@ -38,19 +45,19 @@ def block_to_blocktype(block):
         if res := func(block):
             return res
     else:
-        return "paragraph"
+        return BlockType.paragraph
 
 def match_heading(block):
 
     if re.findall(r"^#{1,6} ", block):
-        return "heading"
+        return BlockType.heading
     else:
         return False
     
 def match_code(block):
 
     if block[0:3] =='```' and block[-3:] == '```':
-        return "code"
+        return BlockType.code
     else:
         return False
     
@@ -61,7 +68,7 @@ def match_quote(block):
             continue
         else:
             return False    
-    return "quote"
+    return BlockType.quote
 
 def match_unordered_list(block):
 
@@ -76,7 +83,7 @@ def match_unordered_list(block):
                 continue
             else:
                 return False
-        return "unordered_list"
+        return BlockType.unordered_list
     else:
         return False
 
@@ -94,4 +101,4 @@ def match_ordered_list(block):
         else:
             return False
     else: 
-        return "ordered_list" 
+        return BlockType.ordered_list

@@ -2,6 +2,7 @@ import unittest
 
 from block_markdown import (markdown_to_blocks,
                             block_to_blocktype,
+                            BlockType
                              )
 
 class TestMarkdownToBlocks(unittest.TestCase):
@@ -92,13 +93,13 @@ class TestBlockToBlockType(unittest.TestCase):
         heading6 = "###### This is a heading"
         heading7 = "####### This is a heading"
 
-        self.assertEqual(block_to_blocktype(heading1), "heading")
-        self.assertEqual(block_to_blocktype(heading2), "heading")
-        self.assertEqual(block_to_blocktype(heading3), "heading")
-        self.assertEqual(block_to_blocktype(heading4), "heading")
-        self.assertEqual(block_to_blocktype(heading5), "heading")
-        self.assertEqual(block_to_blocktype(heading6), "heading")
-        self.assertEqual(block_to_blocktype(heading7), "paragraph")
+        self.assertEqual(block_to_blocktype(heading1), BlockType.heading)
+        self.assertEqual(block_to_blocktype(heading2), BlockType.heading)
+        self.assertEqual(block_to_blocktype(heading3), BlockType.heading)
+        self.assertEqual(block_to_blocktype(heading4), BlockType.heading)
+        self.assertEqual(block_to_blocktype(heading5), BlockType.heading)
+        self.assertEqual(block_to_blocktype(heading6), BlockType.heading)
+        self.assertEqual(block_to_blocktype(heading7), BlockType.paragraph)
 
     def test_code_case(self):
 
@@ -109,11 +110,11 @@ class TestBlockToBlockType(unittest.TestCase):
         code5 = "```This is absolutely not a code block"
 
 
-        self.assertEqual(block_to_blocktype(code1), "code")
-        self.assertEqual(block_to_blocktype(code2), "code")
-        self.assertEqual(block_to_blocktype(code3), "paragraph")
-        self.assertEqual(block_to_blocktype(code4), "paragraph")
-        self.assertEqual(block_to_blocktype(code5), "paragraph")
+        self.assertEqual(block_to_blocktype(code1), BlockType.code)
+        self.assertEqual(block_to_blocktype(code2), BlockType.code)
+        self.assertEqual(block_to_blocktype(code3), BlockType.paragraph)
+        self.assertEqual(block_to_blocktype(code4), BlockType.paragraph)
+        self.assertEqual(block_to_blocktype(code5), BlockType.paragraph)
 
     def test_quote_case(self):
 
@@ -133,9 +134,9 @@ newline
 >>endline
 """
 
-        self.assertEqual(block_to_blocktype(quote1), "quote")
-        self.assertEqual(block_to_blocktype(quote2), "paragraph")
-        self.assertEqual(block_to_blocktype(quote3), "paragraph")
+        self.assertEqual(block_to_blocktype(quote1), BlockType.quote)
+        self.assertEqual(block_to_blocktype(quote2), BlockType.paragraph)
+        self.assertEqual(block_to_blocktype(quote3), BlockType.paragraph)
 
     def test_ul_case(self):
 
@@ -159,12 +160,12 @@ newline
 - te
 va"""
 
-        self.assertEqual(block_to_blocktype(ul1), "unordered_list")
-        self.assertEqual(block_to_blocktype(ul2), "unordered_list")
-        self.assertEqual(block_to_blocktype(ul3), "paragraph")
-        self.assertEqual(block_to_blocktype(ul4), "paragraph")
+        self.assertEqual(block_to_blocktype(ul1), BlockType.unordered_list)
+        self.assertEqual(block_to_blocktype(ul2), BlockType.unordered_list)
+        self.assertEqual(block_to_blocktype(ul3), BlockType.paragraph)
+        self.assertEqual(block_to_blocktype(ul4), BlockType.paragraph)
 
-    def test_ul_case(self):
+    def test_ol_case(self):
 
         ol1 = """1. Hola
 2. como
@@ -186,7 +187,7 @@ va"""
 3. te
 4. va"""
 
-        self.assertEqual(block_to_blocktype(ol1), "ordered_list")
-        self.assertEqual(block_to_blocktype(ol2), "paragraph")
-        self.assertEqual(block_to_blocktype(ol3), "paragraph")
-        self.assertEqual(block_to_blocktype(ol4), "paragraph")
+        self.assertEqual(block_to_blocktype(ol1), BlockType.ordered_list)
+        self.assertEqual(block_to_blocktype(ol2), BlockType.paragraph)
+        self.assertEqual(block_to_blocktype(ol3), BlockType.paragraph)
+        self.assertEqual(block_to_blocktype(ol4), BlockType.paragraph)

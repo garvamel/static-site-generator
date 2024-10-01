@@ -1,7 +1,8 @@
+from typing import Iterator
 import re
 from textnode import TextNode, TextType
 
-def split_nodes_delimiter(old_nodes, delimiter: str, text_type: str):
+def split_nodes_delimiter(old_nodes: list, delimiter: str, text_type: str) -> list[TextNode]:
     
     new_nodes = list()
 
@@ -26,19 +27,19 @@ def split_nodes_delimiter(old_nodes, delimiter: str, text_type: str):
     
     return new_nodes
 
-def extract_markdown_images(text):
+def extract_markdown_images(text: str) -> Iterator[re.Match]:
     pattern = r"!\[([^\[\]]*?)\]\(([^\(\)]*?)\)"
 
     matches = re.finditer(pattern, text)
     return matches
 
-def extract_markdown_links(text):
+def extract_markdown_links(text: str) -> Iterator[re.Match]:
     pattern = r"(?<!!)\[([^\[\]]*?)\]\(([^\(\)]*?)\)"
 
     matches = re.finditer(pattern, text)
     return matches
 
-def split_nodes_images(old_nodes):
+def split_nodes_images(old_nodes: list) -> list[TextNode]:
     new_nodes = list()
     for old_node in old_nodes:
         if old_node.text_type != TextType.text:
@@ -78,7 +79,7 @@ def split_nodes_images(old_nodes):
 
     return new_nodes
 
-def split_nodes_links(old_nodes):
+def split_nodes_links(old_nodes: list) -> list:
 
     new_nodes = list()
     for old_node in old_nodes:
@@ -119,7 +120,7 @@ def split_nodes_links(old_nodes):
 
     return new_nodes
 
-def text_to_textnode(text):
+def text_to_textnode(text: str) -> list[TextNode]:
 
     input_nodes = [TextNode(text, TextType.text)]
     input_nodes = split_nodes_delimiter(input_nodes, '**', TextType.bold)
