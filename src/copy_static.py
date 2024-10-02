@@ -4,7 +4,6 @@ import shutil
 
 def copy_static_to_public(source, dest):
     ld = []
-    paths = []
     if os.path.exists(source):
         ld = os.listdir(source)
 
@@ -13,6 +12,9 @@ def copy_static_to_public(source, dest):
         os.mkdir(dest)
     else:
         os.mkdir(dest)
+
+    if (item := ".DS_Store") in ld:
+        ld.remove(item)
 
     for item in ld:
         s = os.path.join(source, item)

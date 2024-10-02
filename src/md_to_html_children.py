@@ -84,16 +84,16 @@ def clean_code(block: str) -> str:
 def clean_quote(block: str) -> str:
     clean_block = []
     for line in block.splitlines():
-        clean_block.append(line.replace('>', ''))
+        clean_block.append(line.replace('>', '').strip())
     return '\n'.join(clean_block)
 
 def clean_unordered_list(block: str) -> list[str]:
 
     clean_block = []
     lines = block.splitlines()
-
+    pattern = lines[0][:2]
     for line in lines:
-        clean_block.append(line.lstrip("*- "))
+        clean_block.append(line.lstrip(pattern))
     return clean_block
 
 def clean_ordered_list(block: str) -> list[str]:
